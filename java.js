@@ -1,18 +1,28 @@
 function extractMulExpressions(text) {
-  const regex = /mul\((\d+),\s*(\d+)\)/g; // Matches mul(X, Y) format
+  const regex = /(do\(\)|don't\(\)|mul\((\d+),\s*(\d+)\))/g; // Matches mul(X, Y) format and do or don't
   const matches = [...text.matchAll(regex)];
+  let isEnabled = true;
+  let results = [];
+  let totalSum = 0;
 
-  const results = matches.map((match) => ({
-    X: parseInt(match[1], 10),
-    Y: parseInt(match[2], 10),
-    product: parseInt(match[1], 10) * parseInt(match[2], 10), // Multiplication calculation
-  }));
+  for (const match of matches) {
+    if (match[0] === "do()") {
+      isEnabled = true;
+    } else if (match[0] === "don't()") {
+      isEnabled = false;
+    } else if (isEnabled && match[2] !== undefined && match[3] !== undefined) {
+      // Extract numbers and compute product
+      let X = parseInt(match[2], 10);
+      let Y = parseInt(match[3], 10);
+      let product = X * Y;
 
-  const totalSum = results.reduce((sum, item) => sum + item.product, 0);
+      results.push({ X, Y, product });
+      totalSum += product;
+    }
+  }
 
   return { results, totalSum };
 }
-
 function processText() {
   const text = document.getElementById("textInput").value;
   const { results, totalSum } = extractMulExpressions(text);
